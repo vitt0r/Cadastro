@@ -21,7 +21,6 @@ export class EnderecoController {
     }
 
     @Put("/atualizar/:codend")
-    @UseGuards(AutenticacaoGuard)
     async atualizaEndereco(@Body() dados: AtualizaEnderecoDto, @Param("codend") codend: number) {
         return await this.enderecoService.atualizaEndereco(dados, codend)
     }

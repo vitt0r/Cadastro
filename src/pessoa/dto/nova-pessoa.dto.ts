@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from "class-validator"
+import { NovoEnderecoDto } from "src/endereco/dto/novo-endereco.dto"
 
 export class NovaPessoaDto {
     @IsString()
@@ -15,4 +16,5 @@ export class NovaPessoaDto {
     TELEFONE: string
     @IsNotEmpty()
     CODEND: number
+    ENDERECO: NovoEnderecoDto
 }

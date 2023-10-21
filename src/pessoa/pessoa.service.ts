@@ -9,68 +9,71 @@ export class PessoaService {
         private prismaService: PrismaService
     ) { }
 
-    async novaPessoa(dados: NovaPessoaDto){
+    async novaPessoa(dados: NovaPessoaDto) {
         try {
             const validaPessoa = await this.prismaService.pessoa.findUnique({
-                where:{
+                where: {
                     CPF: dados.CPF
                 }
             })
-            if(validaPessoa) throw new HttpException("Já existe esse CPF cadastrado",HttpStatus.CONFLICT)
-    
+            if (validaPessoa) throw new HttpException("Já existe esse CPF cadastrado", HttpStatus.CONFLICT)
+
             const novaPessoa = await this.prismaService.pessoa.create({
                 data: {
                     CPF: dados.CPF,
                     NOME: dados.NOME,
-                    SOBRENOME:dados.SOBRENOME,
+                    SOBRENOME: dados.SOBRENOME,
                     TELEFONE: dados.TELEFONE,
                     CODEND: dados.CODEND
+                },
+                include: {
+                    Endereco: true,
                 }
             });
-            return novaPessoa;    
+            return novaPessoa;
         } catch (error) {
             throw new BadRequestException("Dados inválidos.")
         }
-       
+
     }
 
-    async todasPessoas(){
-        const pessoas = await this.prismaService.pessoa.findMany()
+    async todasPessoas() {
+        const pessoas = await this.prismaService.pessoa.findMany({ include: { Endereco: true }, },);
 
-        if(!pessoas) throw new NotFoundException("Não foram encontrados pessoas cadastradas")
-        
-        return{
+        if (!pessoas) throw new NotFoundException("Não foram encontrados pessoas cadastradas")
+
+        return {
             mensagem: "Pessoas localizadas com sucesso",
             status: HttpStatus.ACCEPTED,
             retorno: pessoas
         }
     }
 
-    async atualizaPessoa(dados: AtualizaPessoaDto, codpes: number){
+    async atualizaPessoa(dados: AtualizaPessoaDto, codpes: number) {
         const validaPessoa = await this.prismaService.pessoa.findUnique({
-            where:{
+            where: {
                 CODPES: Number(codpes)
             }
         })
         if (!validaPessoa) throw new NotFoundException("Pessoa não localizada.")
 
         const pessoaAtualizada = await this.prismaService.pessoa.update({
-            where:{
+            where: {
                 CODPES: Number(codpes)
-            }, data:{
+            }, data: {
                 TELEFONE: dados.TELEFONE,
                 CODEND: dados.CODEND
             }
         })
-        return{
-            mensagem:"Pessoa atualizada com sucesso",
+        return {
+            mensagem: "Pessoa atualizada com sucesso",
             status: HttpStatus.ACCEPTED
         }
     }
 
-    async deletaPessoa(codpes: number){
+    async deletaPessoa(codpes: number) {
         const validaUsuario = await this.prismaService.pessoa.findUnique({
-            where:{
+            where: {
                 CODPES: Number(codpes)
             }
         })

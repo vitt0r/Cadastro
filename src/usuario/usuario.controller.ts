@@ -21,7 +21,6 @@ export class UsuarioController {
     }
 
     @Put("/atualizar/:codusu")
-    @UseGuards(AutenticacaoGuard)
     async atualizaUsuario(@Body() dados: AtualizaUsuarioDto, @Param("codusu") codusu: number) {
         return await this.usuarioService.atualizaUsuario(dados, codusu)
     }

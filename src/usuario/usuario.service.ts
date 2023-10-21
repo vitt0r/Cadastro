@@ -2,6 +2,8 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NovoUsuarioDto } from './dto/novo-usuario.dto';
 import { AtualizaUsuarioDto } from './dto/atualiza-usuario.dto';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UsuarioService {
@@ -15,29 +17,39 @@ export class UsuarioService {
                 where: {
                     EMAIL: dados.EMAIL
                 }
-            })
-            if (validaUsuario) throw new HttpException("Já existe usuário cadastrado com esse email", HttpStatus.CONFLICT)
-
+            });
+    
+            if (validaUsuario) {
+                throw new HttpException("Já existe usuário cadastrado com esse email", HttpStatus.CONFLICT);
+            }
+    
+            const senhaCriptografada = await this.hashPassword(dados.SENHA);
+    
             const novoUsuario = await this.prismaService.usuario.create({
                 data: {
                     EMAIL: dados.EMAIL,
-                    SENHA: dados.SENHA
-                }, select: {
+                    SENHA: senhaCriptografada
+                }, 
+                select: {
                     EMAIL: true, LOGADO: true
                 }
             });
-
+    
             return {
-                mensagem: "Usuario criado com sucesso",
+                mensagem: "Usuário criado com sucesso",
                 status: HttpStatus.CREATED,
                 retorno: novoUsuario
             };
-
         } catch (error) {
-            throw new BadRequestException("Dados inválidos.")
+            throw new BadRequestException("Dados inválidos.");
         }
     }
-
+    
+    private async hashPassword(password: string): Promise<string> {
+        const saltRounds = 10; // Número de salt rounds
+        return bcrypt.hash(password, saltRounds);
+    }
+    
     async todosUsuarios() {
         const usuarios = await this.prismaService.usuario.findMany()
 
